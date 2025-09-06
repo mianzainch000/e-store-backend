@@ -74,18 +74,49 @@ exports.getCart = async (req, res) => {
     }
 };
 
+
 // Remove Cart Item
 exports.removeCartItem = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.userId;
 
-        const deleted = await Cart.deleteOne({ _id: id, userId });
-        if (deleted.deletedCount > 0) {
-            return res.status(200).json({ message: "Item removed" });
+        // Cart item find karo
+        const cartItem = await Cart.findOne({ _id: id, userId });
+        if (!cartItem) {
+            return res.status(404).json({ message: "Item not found in cart" });
         }
-        res.status(404).json({ message: "Item not found" });
+
+        // Product find karo
+        const product = await Product.findById(cartItem.productId);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        // size quantity wapis add karo
+        let sizeFound = false;
+        for (let i = 0; i < product.sizes.length; i++) {
+            for (let j = 0; j < product.sizes[i].length; j++) {
+                if (product.sizes[i][j].name === cartItem.size) {
+                    product.sizes[i][j].quantity += cartItem.quantity; // ✅ restore stock
+                    sizeFound = true;
+                }
+            }
+        }
+
+        if (!sizeFound) {
+            return res.status(400).json({ message: "Size not found in product" });
+        }
+
+        await product.save();
+
+        // ab cart item delete karo
+        await Cart.deleteOne({ _id: id, userId });
+
+        res.status(200).json({ message: "Item removed and stock restored" });
     } catch (error) {
+        console.error("removeCartItem error:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
+
