@@ -6,7 +6,7 @@ const serverless = require("serverless-http");
 const connectDB = require("./src/config/db");
 const userRoutes = require("./src/routes/userRoutes");
 const productRoutes = require("./src/routes/productRoutes");
-
+const cartRoutes = require("./src/routes/cartRoutes");
 
 const app = express();
 app.use("/uploads", express.static("uploads"));
@@ -28,6 +28,7 @@ app.use(async (req, res, next) => {
 // --- Routes ---
 app.use("/", userRoutes);
 app.use("/", productRoutes);
+app.use("/", cartRoutes);
 
 // --- Export for Vercel (Serverless) ---
 module.exports = app;
