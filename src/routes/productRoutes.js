@@ -24,7 +24,6 @@ router.put(
     "/updateProduct/:id",
     authenticate,
     createMulterUpload(),
-    productController.validate("product"),
     productController.updateProduct
 );
 

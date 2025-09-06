@@ -120,3 +120,37 @@ exports.removeCartItem = async (req, res) => {
     }
 };
 
+
+// Remove All Cart Items for current user
+exports.removeAllCartItems = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Current user's cart items fetch karo
+        const cartItems = await Cart.find({ userId });
+
+        for (let cartItem of cartItems) {
+            // Product fetch karo
+            const product = await Product.findById(cartItem.productId);
+            if (product) {
+                // Size quantity restore karo
+                for (let i = 0; i < product.sizes.length; i++) {
+                    for (let j = 0; j < product.sizes[i].length; j++) {
+                        if (product.sizes[i][j].name === cartItem.size) {
+                            product.sizes[i][j].quantity += cartItem.quantity;
+                        }
+                    }
+                }
+                await product.save();
+            }
+        }
+
+        // User ke saare cart items delete karo
+        await Cart.deleteMany({ userId });
+
+        res.status(200).json({ message: "All cart items removed and stock restored" });
+    } catch (error) {
+        console.error("removeAllCartItems error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};

@@ -8,6 +8,7 @@ const CartItemSchema = new Schema({
     price: { type: Number, required: true },
     image: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "users", required: true },
+    // createdAt: { type: Date, default: Date.now, expires: 30 }
 });
 
 module.exports = mongoose.model("Cart", CartItemSchema);
